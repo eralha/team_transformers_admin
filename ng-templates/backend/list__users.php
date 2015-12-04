@@ -1,8 +1,11 @@
 <!-- LIST USER -->
-<div class="list-group account-list-projs">
+<div class="list-group account-list-projs team__content_container">
   
 	  	<div class="list-group-item" ng-repeat="user in users">
-	  		<a type="button" class="btn btn-primary pull-right" href="#/user/{{user.ID}}">Ver ficha</a>
+        <div class="pull-right">
+  	  		<a type="button" class="btn btn-primary" href="#/user/{{user.ID}}">Ver ficha</a>
+          <a type="button" class="btn btn-primary" href="#/user-messages/{{user.ID}}">Mensagens</a>
+        </div>
         <h4 class="list-group-item-heading">{{user.display_name}}</h4>
         <p class="list-group-item-text">
         	<span><b>Treinador:</b> {{getTreinador(user.treinador[0])}}</span>

@@ -1,7 +1,7 @@
 <!-- LIST USER -->
 <div class="list-group account-list-projs">
 
-    <form class="team__form_container">
+    <form class="team__content_container">
       <div class="form-group">
         <label for="exampleInputEmail1">Nome</label>
         <div class="form-control">{{user.display_name}}</div>

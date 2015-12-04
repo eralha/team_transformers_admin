@@ -13,6 +13,9 @@ var module = angular.module('appModule', ['ngRoute']);
 	  .when('/user/:id', {
 	  	controller: 'fichaUserController',
 	  	templateUrl : window.pluginsDir+'/ng-templates/backend/ficha__user.php'
+	  }).when('/user-messages/:id', {
+	  	controller: 'userMessagesController',
+	  	templateUrl : window.pluginsDir+'/ng-templates/backend/user__messages.php'
 	  });
 
 	  // configure html5 to get links working on jsfiddle
@@ -81,6 +84,7 @@ var module = angular.module('appModule', ['ngRoute']);
 	module.controller('mainController', function($scope, dataService, $location) {
 
 		$scope.isAdmin = window.isAdmin;
+		$scope.currentUserId = window.currentUserId;
 
 		if(window.isAdmin && $location.url() == ''){
 			window.location = '#/all-users/';
@@ -108,6 +112,19 @@ var module = angular.module('appModule', ['ngRoute']);
 			return id;
 		}
 
+		$scope.getUser = function(id){
+			dataService.getData({
+				action : 'getUser',
+				'user_id' : id
+			}).then(function(data){
+				$scope.user = data;
+				if(!data.meta.treinador){
+					$scope.user.meta.treinador = Array();
+					//$scope.treinador = (parseInt(data.meta.treinador[0])) ? data.meta.treinador[0] : '0';
+				}
+			});
+		}
+
 		dataService.getData({
 			action : 'getColaborators'
 		}).then(function(data){
@@ -118,16 +135,7 @@ var module = angular.module('appModule', ['ngRoute']);
 
 	module.controller('fichaUserController', function($scope, $rootScope, dataService, $routeParams) {
 
-		dataService.getData({
-			action : 'getUser',
-			'user_id' : $routeParams.id
-		}).then(function(data){
-			$rootScope.user = data;
-			if(!data.meta.treinador){
-				$rootScope.user.meta.treinador = Array();
-				//$scope.treinador = (parseInt(data.meta.treinador[0])) ? data.meta.treinador[0] : '0';
-			}
-		});
+		$scope.getUser($routeParams.id);
 
 		$scope.saveUser = function(){
 			dataService.getData({
@@ -148,6 +156,24 @@ var module = angular.module('appModule', ['ngRoute']);
 
 	});
 
+
+	module.controller('userMessagesController', function($scope, dataService, $routeParams) {
+
+		$scope.getUser($routeParams.id);
+
+		$scope._showForm = false;
+		$scope.toggleForm = function(){
+			$scope._showForm = ($scope._showForm) ? false : true;
+		}
+
+		dataService.getData({
+			action : 'getUserMessages',
+			user_id: $routeParams.id
+		}).then(function(data){
+			$scope.messages = data;
+		});
+
+	});
 
 	module.controller('listSubscribersController', function($scope, dataService) {
 
