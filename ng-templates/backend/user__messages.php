@@ -7,15 +7,15 @@
   <h3><button type="button" class="btn btn-danger" ng-click="toggleForm()">Fechar</button> Nova mensagem para {{user.display_name}}</h3>
   <div class="form-group">
     <label for="exampleInputEmail1">Assunto</label>
-    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Assunto">
+    <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Assunto" ng-model="mensagem.vchAssunto">
   </div>
 
   <div class="form-group">
     <label for="exampleInputEmail1">Mensagem</label>
-    <textarea class="form-control" placeholder="Mensagem" style="height:150px"></textarea>
+    <textarea class="form-control" placeholder="Mensagem" style="height:150px" ng-model="mensagem.vchMensagem"></textarea>
   </div>
 
-  <button type="button" class="btn btn-success" ng-click="saveUser()">Enviar</button>
+  <button type="button" class="btn btn-success" ng-click="enviarMensagem()">Enviar</button>
 
 </form>
 

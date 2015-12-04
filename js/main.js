@@ -160,10 +160,15 @@ var module = angular.module('appModule', ['ngRoute']);
 	module.controller('userMessagesController', function($scope, dataService, $routeParams) {
 
 		$scope.getUser($routeParams.id);
+		$scope.mensagem = {};
 
 		$scope._showForm = false;
 		$scope.toggleForm = function(){
 			$scope._showForm = ($scope._showForm) ? false : true;
+		}
+
+		$scope.enviarMensagem = function(){
+			console.log($scope.mensagem);
 		}
 
 		dataService.getData({
