@@ -16,10 +16,16 @@
 
 	<div class="alert alert-success" role="alert" ng-if="showInsertMessage">Registo Guardado</div>
 
+	<div class="alert alert-danger" role="alert" ng-if="showInsertError">Ocorreu um erro!</div>
+
 
 	<ul class="nav nav-pills" ng-if="checkUrl('/user')">
       <li role="presentation" ng-class="{active : checkUrl('/user/')}"><a href="#/user/{{user.ID}}">Ficha</a></li>
-      <li role="presentation" ng-class="{active : checkUrl('/user-messages/')}"><a href="#/user-messages/{{user.ID}}">Mensagens</a></li>
+      <li role="presentation" ng-class="{active : checkUrl('/user-messages/')}">
+      		<a href="#/user-messages/{{user.ID}}">
+      			Mensagens <span class="badge" ng-if="user.msgs_to_read != 0">{{user.msgs_to_read}}</span>
+      		</a>
+      </li>
       <li role="presentation" ng-class="{active : checkUrl('/user-relatorio/')}"><a href="#/user-relatorio/{{user.ID}}">Relatorio</a></li>
     </ul>
 

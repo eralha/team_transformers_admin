@@ -36,8 +36,12 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_register_script( 'team-angular-funcs', plugins_url( 'js/main.js', __FILE__ ), array('angular'));
 
 			wp_register_style( 'bootstrap', 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css' );
+			wp_register_style( 'font-awesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
 
     		wp_enqueue_style( 'bootstrap' );
+    		wp_enqueue_style( 'font-awesome' );
+
+    		
     		/*
     		wp_enqueue_script( 'team-angular-funcs' );
     		wp_enqueue_script( 'angular' );
@@ -63,12 +67,12 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$sqlTblMessagens = "CREATE TABLE ".$table_menssages." 
 			(
 				`iIDMenssagem` int(8) NOT NULL auto_increment, 
-				`iUserId` int(32) NOT NULL, 
-				`iUserIdDestinatario` int(32) NOT NULL, 
+				`iUserId` int(8) NOT NULL, 
+				`iUserIdDestinatario` int(8) NOT NULL, 
 				`iIDMenssagemResposta` int(32) NOT NULL, 
 				`iData` int(32) NOT NULL, 
-				`iLida` int(32) NOT NULL, 
-				`iDataLida` int(32) NOT NULL, 
+				`iLida` int(1) NOT NULL, 
+				`iDataLida` int(32) NOT NULL,
 				`vchAssunto` varchar(200) NOT NULL, 
 				`vchMensagem` varchar(3000) NOT NULL, 
 				PRIMARY KEY  (`iIDMenssagem`)
@@ -126,9 +130,23 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
+		function checkMessagesFromUser($user_id, $current_userID){
+			global $wpdb;
+
+			$query = "SELECT COUNT(*) FROM $this->table_menssages";
+			$query .= " WHERE iUserIdDestinatario = $current_userID";
+			$query .= " AND iUserId = $user_id";
+			$query .= " AND iLida = 0";
+			$msgs_to_read = $wpdb->get_var($query);
+
+			return $msgs_to_read;
+		}
+
 		function getColaboradorSubscribers(){
 			global $wpdb;
 			global $current_user;
+
+			$current_userID = $current_user->data->ID;
 
 			$users = get_users(array(
 				'order' => 'DESC',
@@ -141,6 +159,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 			foreach ($users as $user) {
 			  $user_id = $user->data->ID;
 			  $user->data->treinador = get_user_meta($user_id, 'treinador');
+			  $user->data->msgs_to_read = $this->checkMessagesFromUser($user_id, $current_userID);
 
 			  if($current_user->data->ID == $user->data->treinador[0]){
 			  	array_push($postObj, $user->data);
@@ -157,6 +176,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 			global $wpdb;
 			global $current_user;
 
+			$current_userID = $current_user->data->ID;
+
 			$users = get_users(array(
 				'order' => 'DESC',
 				'orderby' => 'id',
@@ -168,6 +189,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 			foreach ($users as $user) {
 			  $user_id = $user->data->ID;
 			  $user->data->treinador = get_user_meta($user_id, 'treinador');
+			  $user->data->msgs_to_read = $this->checkMessagesFromUser($user_id, $current_userID);
 
 			  array_push($postObj, $user->data);
 
@@ -180,12 +202,19 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 		function getUserInfo(){
 			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
 			
 			$user_id = $_POST["user_id"];
 			$user = get_user_by('id', $user_id);
 			$user->data->meta = get_user_meta($user_id);
 
+			
+			$msgs_to_read = $this->checkMessagesFromUser($user_id, $current_userID);
+
 			$postObj = $user->data;
+			$postObj->msgs_to_read = $msgs_to_read;
 
 			echo json_encode($postObj);
 
@@ -206,19 +235,78 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
+		function getUserSentMessages(){
+			global $wpdb;
+			global $current_user;
+
+			$sender_id = (isset($_POST["sender_id"])) ? $_POST["sender_id"] : 0;
+			$receiver_id = (isset($_POST["receiver_id"])) ? $_POST["receiver_id"] : 0;
+
+			$query = 'SELECT msg.*, u.display_name AS vchRemetenteNome FROM '.$this->table_menssages.' AS msg';
+			$query .= ' INNER JOIN wp_users AS u ON u.ID = msg.iUserId';
+			$query .= ' WHERE msg.iUserId = '.$sender_id;
+
+			$query .= ' AND msg.iUserIdDestinatario = '.$receiver_id;
+			$query .= ' ORDER BY msg.iData DESC';
+
+			$results = $wpdb->get_results($query, OBJECT);
+
+			echo json_encode($results);
+
+			wp_die();
+		}
+
 		function getUserMessages(){
 			global $wpdb;
 			global $current_user;
 			
-			$query = 'SELECT * FROM '.$this->table_menssages.' WHERE iUserIdDestinatario = '.$current_user->data->ID;
 			$user_id = (isset($_POST["user_id"])) ? $_POST["user_id"] : $current_user->data->ID;
 
-			//Se pedir mensagen para outro utilizador que não o logado
-			if($user_id != $current_user->data->ID){
-				$query .= ' AND iUserId = '.$user_id;
-			}
+			$query = 'SELECT msg.*, u.display_name AS vchRemetenteNome FROM '.$this->table_menssages.' AS msg';
+			$query .= ' INNER JOIN wp_users AS u ON u.ID = msg.iUserId';
+			$query .= ' WHERE msg.iUserId = '.$user_id;
+
+			$query .= ' AND msg.iUserIdDestinatario = '.$current_user->data->ID;
+			$query .= ' OR msg.iUserIdDestinatario = '.$user_id;
+			$query .= ' ORDER BY msg.iData DESC';
 
 			$results = $wpdb->get_results($query, OBJECT);
+
+			echo json_encode($results);
+
+			wp_die();
+		}
+
+		function sendMessageToUser(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+
+			$user_id = $_POST["user_id"];
+			$user = get_user_by('id', $user_id);
+			$user_meta = get_user_meta($user_id);
+
+			$message = json_decode(stripslashes($_POST["message"]));
+
+			$treinador = $user_meta["treinador"][0];
+
+			//se nao for admin e nao for treinador deste user nao adiciona menssagem
+			if(($current_user->caps["administrator"] != 1 && $treinador != $current_userID)
+				|| $message->vchAssunto == ""
+				|| $message->vchMensagem == "") {
+				echo "0";
+				wp_die();
+			}
+
+			$message->iUserIdDestinatario = $user_id;
+			$message->iUserId = $current_userID;
+			$message->iData = time();
+			$message->iIDMenssagemResposta = ($message->iIDMenssagemResposta)? $message->iIDMenssagemResposta : 0;
+			$message->iLida = 0;
+			$message->iDataLida = 0;
+
+			$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
 
 			echo json_encode($results);
 
@@ -252,7 +340,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 			include "css/admin__style.php";
 
-			$content = "<div class='team__admin clearfix' ng-app='appModule'>";
+			$content = "<div class='team__admin clearfix angular-init' ng-app='appModule'>";
 
 			if(is_user_logged_in()){
 				//a view por defeito é a info
@@ -423,6 +511,7 @@ if (isset($eralha_crowdfunding_account_obj)) {
 		add_action( 'wp_ajax_getUser', array($eralha_crowdfunding_account_obj, 'getUserInfo') );
 		add_action( 'wp_ajax_setUserMeta', array($eralha_crowdfunding_account_obj, 'setUserMeta') );
 		add_action( 'wp_ajax_getUserMessages', array($eralha_crowdfunding_account_obj, 'getUserMessages') );
+		add_action( 'wp_ajax_sendMessageToUser', array($eralha_crowdfunding_account_obj, 'sendMessageToUser') );
 
 	//Filters
 		//Search the content for galery matches

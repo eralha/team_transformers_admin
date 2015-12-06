@@ -60,8 +60,35 @@ var module = angular.module('appModule', ['ngRoute']);
             return $delegate;
         }]);
 
+        $provide.decorator('$rootScope', ['$delegate', function($delegate){
+            Object.defineProperty($delegate.constructor.prototype, '$onInterval', {
+                value: function(name, handler, timer){
+
+                	if($delegate[name + 'TimerId']){
+						clearInterval($delegate[name + 'TimerId']);
+					}
+                    $delegate[name + 'TimerId'] = setInterval(function(){
+                    	delete $delegate[name + 'TimerId'];
+                    	handler();
+                    }, timer);
+
+                    return $delegate[name + 'TimerId'];
+                },
+                enumerable: false
+            });
+            return $delegate;
+        }]);
+
 
     }]);
+
+	module.filter('startFrom', function() {
+	    return function(input, start) {
+	        start = +start; //parse to int
+	        if(!input){ return; }
+	        return input.slice(start);
+	    }
+	});
 
 	module.factory('dataService', function($http, $q) {
 
@@ -131,6 +158,8 @@ var module = angular.module('appModule', ['ngRoute']);
 			$scope.treinadores = data;
 		});
 
+		jQuery('.angular-init').removeClass('angular-init');
+
 	});
 
 	module.controller('fichaUserController', function($scope, $rootScope, dataService, $routeParams) {
@@ -157,26 +186,95 @@ var module = angular.module('appModule', ['ngRoute']);
 	});
 
 
-	module.controller('userMessagesController', function($scope, dataService, $routeParams) {
+	module.controller('userMessagesController', function($scope, dataService, $routeParams, $rootScope, $filter) {
 
 		$scope.getUser($routeParams.id);
+		$scope.currentPage = 0;
+    	$scope.pageSize = 10;
+    	$scope.messages = [];
 		$scope.mensagem = {};
 
 		$scope._showForm = false;
+
+	    $scope.nextPage = function(){
+	    	if($scope.currentPage >= $scope.messages.length / $scope.pageSize - 1) { return; }
+	    	$scope.currentPage ++;
+	    	$scope.showPage();
+	    }
+
+	    $scope.prevPage = function(){
+	    	if($scope.currentPage == 0) { return; }
+	    	$scope.currentPage --;
+	    	$scope.showPage();
+	    }
+
+	    $scope.generatePages = function(){
+	    	$scope.pages = Array();
+	    	for(var i=0; i < $scope.pageTotal; i++){
+	    		$scope.pages.push(i+1);
+	    	}
+	    }
+
+	    $scope.gotoPage = function(page){
+	    	$scope.currentPage = page -1;
+	    	$scope.showPage();
+	    }
+
+	    $scope.showPage = function(){
+	    	$scope.startFrom = $scope.currentPage*$scope.pageSize;
+	    	$scope.pageTotal = Math.ceil($scope.messages.length/$scope.pageSize);
+
+	    	$scope.messagesFiltered = $filter('startFrom')($scope.messages, ($scope.startFrom));
+	    	$scope.messagesFiltered = $filter('limitTo')($scope.messagesFiltered, ($scope.pageSize));
+	    }
+
 		$scope.toggleForm = function(){
+			$scope.mensagem = {};
 			$scope._showForm = ($scope._showForm) ? false : true;
 		}
 
-		$scope.enviarMensagem = function(){
-			console.log($scope.mensagem);
+		$scope.replyTo = function (msg){
+			$scope.toggleForm();
+			$scope.mensagem.iIDMenssagemResposta = msg.iIDMenssagem;
+			$scope.mensagem.vchAssunto = msg.vchAssunto;
 		}
 
-		dataService.getData({
-			action : 'getUserMessages',
-			user_id: $routeParams.id
-		}).then(function(data){
-			$scope.messages = data;
-		});
+		$scope.enviarMensagem = function(){
+			dataService.getData({
+				action : 'sendMessageToUser',
+				user_id: $routeParams.id,
+				message: angular.toJson($scope.mensagem)
+			}).then(function(data){
+				if(data == 1){
+					$scope.mensagem = {};
+					$scope.currentPage = 0;
+					$scope.getMessages();
+					$scope.toggleForm();
+				}
+				if(data == 0){
+					$rootScope.showInsertError = true;
+					$rootScope.$onTimeout('errorMsg', function(){
+						$rootScope.showInsertError = false;
+						$scope.$apply();
+					}, 2000);
+				}
+			});
+		}
+
+		$scope.getMessages = function (){
+			dataService.getData({
+				action : 'getUserMessages',
+				user_id: $routeParams.id
+			}).then(function(data){
+				$scope.messages = data;
+				$scope.currentPage = 0;
+				$scope.showPage();
+				$scope.generatePages();
+			});
+		}
+		$scope.getMessages();
+
+		
 
 	});
 
@@ -210,3 +308,4 @@ var module = angular.module('appModule', ['ngRoute']);
 		}
 
 	});
+
