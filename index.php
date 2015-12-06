@@ -242,12 +242,11 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$sender_id = (isset($_POST["sender_id"])) ? $_POST["sender_id"] : 0;
 			$receiver_id = (isset($_POST["receiver_id"])) ? $_POST["receiver_id"] : 0;
 
-			$query = 'SELECT msg.*, u.display_name AS vchRemetenteNome FROM '.$this->table_menssages.' AS msg';
-			$query .= ' INNER JOIN wp_users AS u ON u.ID = msg.iUserId';
-			$query .= ' WHERE msg.iUserId = '.$sender_id;
-
-			$query .= ' AND msg.iUserIdDestinatario = '.$receiver_id;
-			$query .= ' ORDER BY msg.iData DESC';
+			$query = "SELECT t.*, u1.display_name AS vchSenderName, u2.display_name AS vchReceiverName FROM ";
+			$query .= "(SELECT * FROM $this->table_menssages WHERE `iUserId` = $sender_id AND `iUserIdDestinatario` = $receiver_id) AS t "
+			$query .= "INNER JOIN wp_users AS u1 ON u1.ID = t.iUserId ";
+			$query .= "INNER JOIN wp_users AS u2 ON u2.ID = t.iUserIdDestinatario ";
+			$query .= "ORDER BY msg.iData DESC";
 
 			$results = $wpdb->get_results($query, OBJECT);
 
