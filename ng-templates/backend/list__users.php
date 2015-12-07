@@ -4,7 +4,7 @@
 	  	<div class="list-group-item" ng-repeat="user in users">
         <div class="pull-right">
   	  		<a type="button" class="btn btn-primary" href="#/user/{{user.ID}}">Ver ficha</a>
-          <a type="button" class="btn btn-primary" href="#/user-messages/{{user.ID}}">
+          <a type="button" class="btn btn-primary" href="#/user-inbox/{{user.ID}}">
             Mensagens <span class="badge" ng-if="user.msgs_to_read != 0">{{user.msgs_to_read}}</span>
           </a>
         </div>

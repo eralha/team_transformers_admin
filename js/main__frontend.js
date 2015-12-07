@@ -2,26 +2,20 @@ var module = angular.module('appModule', ['ngRoute']);
 
 	module.config(function($routeProvider, $locationProvider) {
 	  $routeProvider
-	  .when('/all-users/', {
-	  	controller: 'listAllSubscribersController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/backend/list__users.php'
-	  })
-	  .when('/my-users/', {
-	  	controller: 'listSubscribersController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/backend/list__users.php'
-	  })
-	  .when('/user/:id', {
+	  
+
+	  .when('/account/', {
 	  	controller: 'fichaUserController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/backend/ficha__user.php'
+	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/ficha__user.php'
 	  })
 
-	  .when('/user-inbox/:idCliente', {
+	  .when('/user-inbox/', {
 	  	controller: 'inboxController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/backend/user__messages.php'
+	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/user__messages.php'
 	  })
-	  .when('/user-outbox/:idCliente', {
+	  .when('/user-outbox/', {
 	  	controller: 'inboxController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/backend/user__messages.php'
+	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/user__messages.php'
 	  });
 
 	  // configure html5 to get links working on jsfiddle

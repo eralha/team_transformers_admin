@@ -1,8 +1,8 @@
 <?php
 	/*
-		Plugin Name: Crowdfunging User Account
+		Plugin Name: Gestão de clientes
 		Plugin URI: 
-		Description: It Enables an account for a wordpress template used in crowdfunding websites, add user, edit user info, add projects, edit projects
+		Description: Permite a gestão de clientes e de treinadores
 		Version: 0.0.1
 		Author: Emanuel Ralha
 		Author URI: 
@@ -142,6 +142,26 @@ if (!class_exists("eralha_crowdfunding_account")){
 			return $msgs_to_read;
 		}
 
+		function getUserToReadMessages(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+			
+
+			$query = "SELECT COUNT(*) FROM $this->table_menssages";
+			$query .= " WHERE iUserIdDestinatario = $current_userID";
+			$query .= " AND iLida = 0";
+			$msgs_to_read = $wpdb->get_var($query);
+
+			$postObj = (object)[];
+			$postObj->msgs_to_read = $msgs_to_read;
+
+			echo json_encode($postObj);
+
+			wp_die();
+		}
+
 		function getColaboradorSubscribers(){
 			global $wpdb;
 			global $current_user;
@@ -235,20 +255,45 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
-		function getUserSentMessages(){
+		function getMessages($sender_id, $receiver_id){
 			global $wpdb;
 			global $current_user;
 
-			$sender_id = (isset($_POST["sender_id"])) ? $_POST["sender_id"] : 0;
-			$receiver_id = (isset($_POST["receiver_id"])) ? $_POST["receiver_id"] : 0;
-
 			$query = "SELECT t.*, u1.display_name AS vchSenderName, u2.display_name AS vchReceiverName FROM ";
-			$query .= "(SELECT * FROM $this->table_menssages WHERE `iUserId` = $sender_id AND `iUserIdDestinatario` = $receiver_id) AS t "
+			$query .= "(SELECT * FROM $this->table_menssages WHERE `iUserId` = $sender_id AND `iUserIdDestinatario` = $receiver_id) AS t ";
 			$query .= "INNER JOIN wp_users AS u1 ON u1.ID = t.iUserId ";
 			$query .= "INNER JOIN wp_users AS u2 ON u2.ID = t.iUserIdDestinatario ";
-			$query .= "ORDER BY msg.iData DESC";
+			$query .= "ORDER BY t.iData DESC";
 
-			$results = $wpdb->get_results($query, OBJECT);
+			return $results = $wpdb->get_results($query, OBJECT);
+		}
+
+		function getUserInbox(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+
+			$sender_id = (isset($_POST["sender_id"])) ? $_POST["sender_id"] : 0;
+			$receiver_id = $current_userID;
+
+			$results = $this->getMessages($sender_id, $receiver_id);
+
+			echo json_encode($results);
+
+			wp_die();
+		}
+
+		function getUserOutbox(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+
+			$sender_id = $current_userID;
+			$receiver_id = (isset($_POST["receiver_id"])) ? $_POST["receiver_id"] : 0;
+
+			$results = $this->getMessages($sender_id, $receiver_id);
 
 			echo json_encode($results);
 
@@ -259,14 +304,12 @@ if (!class_exists("eralha_crowdfunding_account")){
 			global $wpdb;
 			global $current_user;
 			
-			$user_id = (isset($_POST["user_id"])) ? $_POST["user_id"] : $current_user->data->ID;
+			$user_id = $current_user->data->ID;
+			$inbox = (isset($_POST["inbox"])) ? $_POST["inbox"] : 0;
 
-			$query = 'SELECT msg.*, u.display_name AS vchRemetenteNome FROM '.$this->table_menssages.' AS msg';
+			$query = 'SELECT msg.*, u.display_name AS vchSenderName FROM '.$this->table_menssages.' AS msg';
 			$query .= ' INNER JOIN wp_users AS u ON u.ID = msg.iUserId';
-			$query .= ' WHERE msg.iUserId = '.$user_id;
-
-			$query .= ' AND msg.iUserIdDestinatario = '.$current_user->data->ID;
-			$query .= ' OR msg.iUserIdDestinatario = '.$user_id;
+			$query .= ($inbox == true)? ' WHERE msg.iUserId = '.$user_id : ' WHERE msg.iUserIdDestinatario = '.$user_id;
 			$query .= ' ORDER BY msg.iData DESC';
 
 			$results = $wpdb->get_results($query, OBJECT);
@@ -312,19 +355,110 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
+		function sendMessageToAdmin(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+
+			$user_id = $current_userID;
+			$user = get_user_by('id', $user_id);
+			$user_meta = get_user_meta($user_id);
+
+			$message = json_decode(stripslashes($_POST["message"]));
+
+			$treinador = $user_meta["treinador"][0];
+			$treinador = get_user_by('id', $treinador);
+
+			if(empty($treinador)
+				|| $message->vchAssunto == ""
+				|| $message->vchMensagem == ""){ 
+				echo "0";
+				wp_die();
+			}
+
+			$message->iUserIdDestinatario = $treinador->data->ID;
+			$message->iUserId = $current_userID;
+			$message->iData = time();
+			$message->iIDMenssagemResposta = ($message->iIDMenssagemResposta)? $message->iIDMenssagemResposta : 0;
+			$message->iLida = 0;
+			$message->iDataLida = 0;
+
+			$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
+
+			echo json_encode($results);
+
+			wp_die();
+		}
+
 		function setUserMeta(){
 			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
 			
 			$user_meta = json_decode(stripslashes($_POST["meta"]));
 			$user_id = $_POST["user_id"];
 
+			/*
+			if($current_user->caps["administrator"] != 1) {
+				echo "0";
+
+				wp_die();
+			}
+			*/
+
 			$postObj = $user_meta;
 
-			update_user_meta( $user_id, 'treinador', $user_meta->treinador[0]);
+			$this->updateMetaData($user_id, $user_meta);
 
 			echo json_encode($postObj);
 
 			wp_die();
+		}
+
+		function updateUserData(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+
+			$user_data = json_decode(stripslashes($_POST["user"]));
+			$new_password = json_decode(stripslashes($_POST["new_password"]));
+			
+			$user_meta = $user_data->meta;
+			$user_id =  $user_data->ID;
+
+			if($current_userID != $user_id) {
+				echo "0";
+				wp_die();
+			}
+
+			$stored_user_data = get_user_by('id', $current_userID);
+			$stored_user_data = $stored_user_data->data;
+
+			//check to see if we have changes to stored data if so update it
+			$update_batch = array( 'ID' => $user_id );
+			if($stored_user_data->user_email != $user_data->user_email){
+				$update_batch["user_email"] = $user_data->user_email;
+			}
+			if($stored_user_data->email != $user_data->display_name){
+				$update_batch["display_name"] = $user_data->display_name;
+			}
+			if($new_password){
+				$update_batch["user_pass"] = $new_password;
+			}
+			wp_update_user($update_batch);
+
+			$this->updateMetaData($user_id, $user_meta);
+
+			echo json_encode(get_user_by('id', $current_userID));
+
+			wp_die();
+		}
+
+		function updateMetaData($user_id, $user_meta){
+			update_user_meta( $user_id, 'treinador', $user_meta->treinador[0]);
 		}
 
 		function printAdminPage(){
@@ -358,6 +492,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 				echo "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main.js"></script>';
+				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
+				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main.js"></script>';
+				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
 
 				/*
 				switch ($view) {
@@ -439,6 +576,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 		function addContent($content=''){
 			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
 			$pluginDir = str_replace("", "", plugin_dir_url(__FILE__));
 			set_include_path($pluginDir);
 
@@ -453,19 +593,15 @@ if (!class_exists("eralha_crowdfunding_account")){
 					//este é o menu de navegação que será sempre ncluido
 					include "modules/frontend/account__nav.php";
 
-					switch ($view) {
-					    case "info":
-					        include "modules/frontend/account__info.php";
-					        break;
-					    case "new_proj":
-					        include "modules/frontend/account__new_proj.php";
-					        break;
-					    case "proj_list":
-					        include "modules/frontend/account__proj_list.php";
-					        break;
-					    default:
-					    	$responseHTML = "";
-					}
+					$responseHTML .= "<script>var ajaxurl = '".admin_url('admin-ajax.php')."';</script>";
+					$responseHTML .= "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
+					$responseHTML .= "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
+					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
+					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main__frontend.js"></script>';
+					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
+					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main__frontend.js"></script>';
+					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
+
 				}else{
 					include "modules/frontend/account__register.php";
 				}
@@ -510,7 +646,13 @@ if (isset($eralha_crowdfunding_account_obj)) {
 		add_action( 'wp_ajax_getUser', array($eralha_crowdfunding_account_obj, 'getUserInfo') );
 		add_action( 'wp_ajax_setUserMeta', array($eralha_crowdfunding_account_obj, 'setUserMeta') );
 		add_action( 'wp_ajax_getUserMessages', array($eralha_crowdfunding_account_obj, 'getUserMessages') );
+		add_action( 'wp_ajax_getUserToReadMessages', array($eralha_crowdfunding_account_obj, 'getUserToReadMessages') );
+		add_action( 'wp_ajax_getUserInbox', array($eralha_crowdfunding_account_obj, 'getUserInbox') );
+		add_action( 'wp_ajax_getUserOutbox', array($eralha_crowdfunding_account_obj, 'getUserOutbox') );
 		add_action( 'wp_ajax_sendMessageToUser', array($eralha_crowdfunding_account_obj, 'sendMessageToUser') );
+		add_action( 'wp_ajax_sendMessageToAdmin', array($eralha_crowdfunding_account_obj, 'sendMessageToAdmin') );
+		add_action( 'wp_ajax_updateUserData', array($eralha_crowdfunding_account_obj, 'updateUserData') );
+
 
 	//Filters
 		//Search the content for galery matches
@@ -528,7 +670,7 @@ if (!function_exists("eralha_crowdfunding_account_init")) {
 		}
 		if ( function_exists('add_submenu_page') ){
 			//ADDS A LINK TO TO A SPECIFIC ADMIN PAGE
-			add_menu_page('Doações', 'Clientes', 'publish_posts', 'team-screen', array($eralha_crowdfunding_account_obj, 'printAdminPage'));
+			add_menu_page('Clientes', 'Clientes', 'publish_posts', 'team-screen', array($eralha_crowdfunding_account_obj, 'printAdminPage'));
 			/*
 				add_submenu_page('enc-screen', 'Gallery List', 'Gallery List', 'publish_posts', 'enc-screen', array($eralha_basket_obj, 'printAdminPage'));
 				add_submenu_page('enc-screen', 'Create Gallery', 'Create Gallery', 'publish_posts', 'enc-screen', array($eralha_basket_obj, 'printAdminPage'));

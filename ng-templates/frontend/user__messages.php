@@ -4,10 +4,10 @@
 <button type="button" class="btn btn-success" style="margin-top:15px;" ng-click="toggleForm()">
   <span class="fa fa-envelope-o"></span> Nova Mensagem
 </button>
-<a href="#/user-inbox/{{user.ID}}"><button type="button" class="btn btn-success" style="margin-top:15px;" ng-class="{active : checkUrl('/user-inbox/')}">
-  <span class="fa fa-inbox"></span> Recebidas <span class="badge" ng-if="user.msgs_to_read != 0">{{user.msgs_to_read}}</span>
+<a href="#/user-inbox/"><button type="button" class="btn btn-success" style="margin-top:15px;" ng-class="{active : checkUrl('/user-inbox/')}">
+  <span class="fa fa-inbox"></span> Recebidas <span class="badge" ng-if="msgs_to_read != 0">{{msgs_to_read}}</span>
 </button></a>
-<a href="#/user-outbox/{{user.ID}}"><button type="button" class="btn btn-success" style="margin-top:15px;" ng-class="{active : checkUrl('/user-outbox/')}">
+<a href="#/user-outbox/"><button type="button" class="btn btn-success" style="margin-top:15px;" ng-class="{active : checkUrl('/user-outbox/')}">
   <span class="fa fa-sign-out"></span> Enviadas
 </button></a>
 <!-- END TOPO NAVIGATION -->
@@ -18,7 +18,7 @@
       <button type="button" class="btn btn-danger" ng-click="toggleForm()">
         <span class="fa fa-times"></span>
       </button> 
-      <span>Nova mensagem para {{user.display_name}}</span>
+      <span>Nova mensagem</span>
   </h3>
   <div class="form-group">
     <label for="exampleInputEmail1">Assunto</label>
