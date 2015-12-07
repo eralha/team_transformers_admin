@@ -43,6 +43,20 @@
 
 		    	$scope.messagesFiltered = $filter('startFrom')($scope.messages, ($scope.startFrom));
 		    	$scope.messagesFiltered = $filter('limitTo')($scope.messagesFiltered, ($scope.pageSize));
+
+		    	var msgsToUpdate = Array();
+		    	angular.forEach($scope.messagesFiltered, function(value, key) {
+				  if(value.iLida == 0){
+				  	this.push(value.iIDMenssagem);
+				  }
+				}, msgsToUpdate);
+
+				dataService.getData({
+					action : 'updateMessageState',
+					msgs: angular.toJson(msgsToUpdate)
+				}).then(function(data){
+					console.log(data);
+				});
 		    }
             
         }

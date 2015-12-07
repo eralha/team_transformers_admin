@@ -1,4 +1,4 @@
-<style>
+
 .angular-init { display: none;}
 .team__admin .nav-tabs { padding-top: 20px !important; }
 .team__content_container { 
@@ -15,5 +15,3 @@
   .team__admin .nav-tabs li a.active { border-bottom-color: #ddd !important; }
   .team__form_container { width: 100%; }
 }
-
-</style>

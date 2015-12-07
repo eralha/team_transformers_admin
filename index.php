@@ -417,6 +417,27 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
+		function updateMessageState(){
+			global $wpdb;
+			global $current_user;
+
+			$current_userID = $current_user->data->ID;
+			
+			$msgs = json_decode(stripslashes($_POST["msgs"]));
+
+			$query = "UPDATE $this->table_menssages ";
+			$query .= "SET iLida = 1, ";
+			$query .= "iDataLida = ".time()." ";
+			$query .= "WHERE iIDMenssagem IN (".implode(",", $msgs ).") ";
+			$query .= "AND iUserIdDestinatario = ".$current_userID;
+
+			//$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
+
+			echo json_encode($query);
+
+			wp_die();
+		}
+
 		function updateUserData(){
 			global $wpdb;
 			global $current_user;
@@ -471,8 +492,6 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$successMSG = "";
 			$errorMSG = "";
 
-			include "css/admin__style.php";
-
 			$content = "<div class='team__admin clearfix angular-init' ng-app='appModule'>";
 
 			if(is_user_logged_in()){
@@ -488,8 +507,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 				//este é o menu de navegação que será sempre ncluido
 				include "modules/backend/navigation.php";
 
+				echo "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
 				echo "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
-				echo "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
+				echo "<script>window.currentUserId = '".$current_user->data->ID."';</script>";				
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
@@ -593,6 +613,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 					//este é o menu de navegação que será sempre ncluido
 					include "modules/frontend/account__nav.php";
 
+					$responseHTML .= "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
 					$responseHTML .= "<script>var ajaxurl = '".admin_url('admin-ajax.php')."';</script>";
 					$responseHTML .= "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
 					$responseHTML .= "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
@@ -652,6 +673,7 @@ if (isset($eralha_crowdfunding_account_obj)) {
 		add_action( 'wp_ajax_sendMessageToUser', array($eralha_crowdfunding_account_obj, 'sendMessageToUser') );
 		add_action( 'wp_ajax_sendMessageToAdmin', array($eralha_crowdfunding_account_obj, 'sendMessageToAdmin') );
 		add_action( 'wp_ajax_updateUserData', array($eralha_crowdfunding_account_obj, 'updateUserData') );
+		add_action( 'wp_ajax_updateMessageState', array($eralha_crowdfunding_account_obj, 'updateMessageState') );
 
 
 	//Filters
@@ -670,7 +692,7 @@ if (!function_exists("eralha_crowdfunding_account_init")) {
 		}
 		if ( function_exists('add_submenu_page') ){
 			//ADDS A LINK TO TO A SPECIFIC ADMIN PAGE
-			add_menu_page('Clientes', 'Clientes', 'publish_posts', 'team-screen', array($eralha_crowdfunding_account_obj, 'printAdminPage'));
+			add_menu_page('Clientes', 'Clientes', 'publish_posts', 'team-screen', array($eralha_crowdfunding_account_obj, 'printAdminPage'), 'dashicons-nametag');
 			/*
 				add_submenu_page('enc-screen', 'Gallery List', 'Gallery List', 'publish_posts', 'enc-screen', array($eralha_basket_obj, 'printAdminPage'));
 				add_submenu_page('enc-screen', 'Create Gallery', 'Create Gallery', 'publish_posts', 'enc-screen', array($eralha_basket_obj, 'printAdminPage'));
