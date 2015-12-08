@@ -44,6 +44,7 @@
 		    	$scope.messagesFiltered = $filter('startFrom')($scope.messages, ($scope.startFrom));
 		    	$scope.messagesFiltered = $filter('limitTo')($scope.messagesFiltered, ($scope.pageSize));
 
+		    	//check if there is some message to read and if so change its satate on the server
 		    	var msgsToUpdate = Array();
 		    	angular.forEach($scope.messagesFiltered, function(value, key) {
 				  if(value.iLida == 0){
@@ -51,12 +52,17 @@
 				  }
 				}, msgsToUpdate);
 
-				dataService.getData({
-					action : 'updateMessageState',
-					msgs: angular.toJson(msgsToUpdate)
-				}).then(function(data){
-					console.log(data);
-				});
+				$rootScope.$onTimeout('changeMessageStatus', function(){
+					dataService.getData({
+						action : 'updateMessageState',
+						msgs: angular.toJson(msgsToUpdate)
+					}).then(function(data){
+						//we have changed values so update our list
+						if(data >= 1){
+							$scope.getMessagesToRead();
+						}
+					});
+				}, 2000);
 		    }
             
         }

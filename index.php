@@ -431,9 +431,10 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$query .= "WHERE iIDMenssagem IN (".implode(",", $msgs ).") ";
 			$query .= "AND iUserIdDestinatario = ".$current_userID;
 
-			//$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
 
-			echo json_encode($query);
+			$results = $wpdb->query($query);
+
+			echo json_encode($results);
 
 			wp_die();
 		}
