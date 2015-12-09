@@ -517,19 +517,6 @@ if (!class_exists("eralha_crowdfunding_account")){
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
 
-				/*
-				switch ($view) {
-				    case "list":
-				        include "modules/backend/list__users.php";
-				        break;
-				    case "list_all":
-				        include "modules/backend/list_all__users.php";
-				        break;
-				    default:
-				    	$responseHTML = "";
-				}
-				*/
-
 			}
 
 			$content .= "</div>";

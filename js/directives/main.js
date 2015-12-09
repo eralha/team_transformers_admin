@@ -59,7 +59,18 @@
 					}).then(function(data){
 						//we have changed values so update our list
 						if(data >= 1){
-							$scope.getMessagesToRead();
+							if($scope.getMessagesToRead){
+								$scope.getMessagesToRead();
+							}else{
+								$scope.getUser($scope.user.ID);
+							}
+
+							//update current messages state to readed
+							for(i in $scope.messages){
+								if(msgsToUpdate.indexOf($scope.messages[i].iIDMenssagem) != -1){
+								  	$scope.messages[i].iLida = 1;
+								  }
+							}
 						}
 					});
 				}, 2000);
