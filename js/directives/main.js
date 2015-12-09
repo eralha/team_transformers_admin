@@ -47,7 +47,7 @@
 		    	//check if there is some message to read and if so change its satate on the server
 		    	var msgsToUpdate = Array();
 		    	angular.forEach($scope.messagesFiltered, function(value, key) {
-				  if(value.iLida == 0){
+				  if(value.iLida == 0 && value.iUserIdDestinatario == $scope.currentUserId){
 				  	this.push(value.iIDMenssagem);
 				  }
 				}, msgsToUpdate);

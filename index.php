@@ -341,9 +341,11 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$treinador = $user_meta["treinador"][0];
 
 			//se nao for admin e nao for treinador deste user nao adiciona menssagem
-			if(($current_user->caps["administrator"] != 1 && $treinador != $current_userID)
-				|| $message->vchAssunto == ""
-				|| $message->vchMensagem == "") {
+			if(
+				($current_user->caps["administrator"] != 1 && $treinador != $current_userID)
+				|| 
+				($message->vchAssunto == "" || $message->vchMensagem == "")
+			 ) {
 				echo "0";
 				wp_die();
 			}
