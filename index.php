@@ -407,16 +407,13 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$user_meta = json_decode(stripslashes($_POST["meta"]));
 			$user_id = $_POST["user_id"];
 
-			/*
 			if($current_user->caps["administrator"] != 1) {
 				echo "0";
 
 				wp_die();
 			}
-			*/
 
 			$postObj = $user_meta;
-
 			$this->updateMetaData($user_id, $user_meta);
 
 			echo json_encode($postObj);

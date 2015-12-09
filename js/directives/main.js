@@ -52,6 +52,9 @@
 				  }
 				}, msgsToUpdate);
 
+				//if no messages to update do nothing
+				if(msgsToUpdate.length == 0){ return; }
+
 				$rootScope.$onTimeout('changeMessageStatus', function(){
 					dataService.getData({
 						action : 'updateMessageState',

@@ -38,7 +38,7 @@
 			}).then(function(data){
 				$scope.user = data;
 				if(!data.meta.treinador){
-					$scope.user.meta.treinador = Array();
+					//$scope.user.meta.treinador = Array();
 					//$scope.treinador = (parseInt(data.meta.treinador[0])) ? data.meta.treinador[0] : '0';
 				}
 			});
