@@ -134,9 +134,12 @@ if (!class_exists("eralha_crowdfunding_account")){
 			global $wpdb;
 
 			$query = "SELECT COUNT(*) FROM $this->table_menssages";
-			$query .= " WHERE iUserIdDestinatario = $current_userID";
-			$query .= " AND iUserId = $user_id";
+			$query .= " WHERE iUserIdDestinatario = %d";
+			$query .= " AND iUserId = %d";
 			$query .= " AND iLida = 0";
+
+			$query = $wpdb->prepare($query, $current_userID, $user_id);
+
 			$msgs_to_read = $wpdb->get_var($query);
 
 			return $msgs_to_read;
@@ -246,7 +249,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 			global $current_user;
 			
 			$msg_id = $_POST["msg_id"];
-			$query = 'SELECT * FROM '.$this->table_menssages.' WHERE iIDMenssagemResposta = '.$msg_id;
+			$query = 'SELECT * FROM '.$this->table_menssages.' WHERE iIDMenssagemResposta = %d';
+
+			$query = $wpdb->prepare($query, $msg_id);
 
 			$results = $wpdb->get_results($query, OBJECT);
 
@@ -260,10 +265,12 @@ if (!class_exists("eralha_crowdfunding_account")){
 			global $current_user;
 
 			$query = "SELECT t.*, u1.display_name AS vchSenderName, u2.display_name AS vchReceiverName FROM ";
-			$query .= "(SELECT * FROM $this->table_menssages WHERE `iUserId` = $sender_id AND `iUserIdDestinatario` = $receiver_id) AS t ";
+			$query .= "(SELECT * FROM $this->table_menssages WHERE `iUserId` = %d AND `iUserIdDestinatario` = %d) AS t ";
 			$query .= "INNER JOIN wp_users AS u1 ON u1.ID = t.iUserId ";
 			$query .= "INNER JOIN wp_users AS u2 ON u2.ID = t.iUserIdDestinatario ";
 			$query .= "ORDER BY t.iData DESC";
+
+			$query = $wpdb->prepare($query, $sender_id, $receiver_id);
 
 			return $results = $wpdb->get_results($query, OBJECT);
 		}
@@ -424,13 +431,17 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$current_userID = $current_user->data->ID;
 			
 			$msgs = json_decode(stripslashes($_POST["msgs"]));
+			$msgs = implode(",", $msgs );
+			$msgs = addslashes($msgs);
+
 
 			$query = "UPDATE $this->table_menssages ";
 			$query .= "SET iLida = 1, ";
 			$query .= "iDataLida = ".time()." ";
-			$query .= "WHERE iIDMenssagem IN (".implode(",", $msgs ).") ";
-			$query .= "AND iUserIdDestinatario = ".$current_userID;
+			$query .= "WHERE iIDMenssagem IN (".$msgs.") ";
+			$query .= "AND iUserIdDestinatario = %d";
 
+			$query = $wpdb->prepare($query, $current_userID);
 
 			$results = $wpdb->query($query);
 
