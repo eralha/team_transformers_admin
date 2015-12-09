@@ -1,18 +1,35 @@
 
 
-	module.controller('mainController', function($scope, dataService, $location) {
+	module.controller('mainController', function($scope, dataService, $location, routeConfig) {
 
 		$scope.isAdmin = window.isAdmin;
 		$scope.currentUserId = window.currentUserId;
 		$scope.msgs_to_read = 0;
 
-		if($location.url() == ''){
-			window.location = '#/account/';
-		}
+		
 
 		$scope.$on('$routeChangeStart', function(next, current) { 
-			$scope.url = $location.url()
+			$scope.parseLocation();
 		});
+
+		function isRequiredLogin(url){
+			for (i in routeConfig){
+		    	if(routeConfig[i].path == url && routeConfig[i].requireLogin) { return true; }
+		    }
+		    return false;
+		}
+
+		$scope.parseLocation = function(){
+			$scope.url = $location.url();
+
+			if($scope.url == '' && $scope.currentUserId){
+				window.location = '#/account/';
+			}
+			if(!$scope.currentUserId && isRequiredLogin($scope.url) || $scope.url == ''){
+				window.location = '#/user-login/';
+			}
+		}
+		$scope.parseLocation();
 
 		$scope.checkUrl = function(url){
 			return (String($scope.url).indexOf(url) != -1) ? true : false;
@@ -39,14 +56,46 @@
 			});
 		}
 
-		//Get logged user info
-		//on frontend we only need to do this once
-		$scope.getUser(window.currentUserId);
+		if($scope.currentUserId){
+			//Get logged user info
+			//on frontend we only need to do this once
+			$scope.getUser(window.currentUserId);
 
-		//Get number of messages user has to read
-		$scope.getMessagesToRead();
+			//Get number of messages user has to read
+			$scope.getMessagesToRead();
+		}
 
 		jQuery('.angular-init').removeClass('angular-init');
+
+	});
+
+	module.controller('loginController', function($scope, $rootScope, dataService, $routeParams) {
+
+		$scope.logInUser = function(){
+			dataService.getData({
+				action : 'userLogin',
+				nonce : window.loginNonce
+			}).then(function(data){
+				console.log(data);
+
+				//if data == 0 show error
+				if(data == 0){
+					$rootScope.showInsertError = true;
+					$rootScope.$onTimeout('errorMsg', function(){
+						$rootScope.showInsertError = false;
+						$scope.$apply();
+					}, 2000);
+					return;
+				}
+
+				$rootScope.showInsertMessage = true;
+
+				$rootScope.$onTimeout('sucessMsg', function(){
+					$rootScope.showInsertMessage = false;
+					$scope.$apply();
+				}, 2000);
+			});
+		}
 
 	});
 

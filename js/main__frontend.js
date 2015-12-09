@@ -1,22 +1,46 @@
 var module = angular.module('appModule', ['ngRoute']);
 
+    var routeConfig = [
+        {
+            path: '/account/',
+            controller: 'fichaUserController',
+            template: window.pluginsDir+'/ng-templates/frontend/ficha__user.php',
+            requireLogin : true
+        },
+        {
+            path: '/user-inbox/',
+            controller: 'inboxController',
+            template: window.pluginsDir+'/ng-templates/frontend/user__messages.php',
+            requireLogin : true
+        },
+        {
+            path: '/user-outbox/',
+            controller: 'inboxController',
+            template: window.pluginsDir+'/ng-templates/frontend/user__messages.php',
+            requireLogin : true
+        },
+        {
+            path: '/user-login/',
+            controller: 'loginController',
+            template: window.pluginsDir+'/ng-templates/frontend/user__login.php',
+        },
+        {
+            path: '/user-register/',
+            controller: 'loginController',
+            template: window.pluginsDir+'/ng-templates/frontend/user__register.php',
+        },
+    ];
+
+    module.value('routeConfig', routeConfig);
+
 	module.config(function($routeProvider, $locationProvider) {
-	  $routeProvider
-	  
 
-	  .when('/account/', {
-	  	controller: 'fichaUserController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/ficha__user.php'
-	  })
-
-	  .when('/user-inbox/', {
-	  	controller: 'inboxController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/user__messages.php'
-	  })
-	  .when('/user-outbox/', {
-	  	controller: 'inboxController',
-	  	templateUrl : window.pluginsDir+'/ng-templates/frontend/user__messages.php'
-	  });
+      for (i in routeConfig){
+        $routeProvider.when(routeConfig[i].path, {
+            controller: routeConfig[i].controller,
+            templateUrl : routeConfig[i].template
+          });
+      }
 
 	  // configure html5 to get links working on jsfiddle
 	  $locationProvider.html5Mode({

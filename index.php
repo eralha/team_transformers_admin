@@ -493,6 +493,22 @@ if (!class_exists("eralha_crowdfunding_account")){
 			update_user_meta( $user_id, 'treinador', $user_meta->treinador[0]);
 		}
 
+		function userLogin(){
+			if (!wp_verify_nonce($_POST["nonce"], 'er-login-nonce')){ die('0'); }
+
+			echo "running here!";
+
+			wp_die();
+		}
+
+		function userRegister(){
+			if (!wp_verify_nonce($_POST["nonce"], 'er-register-nonce')){ die('0'); }
+
+			echo "running here!";
+
+			wp_die();
+		}
+
 		function printAdminPage(){
 			global $wpdb;
 			global $current_user;
@@ -600,39 +616,28 @@ if (!class_exists("eralha_crowdfunding_account")){
 			$pluginDir = str_replace("", "", plugin_dir_url(__FILE__));
 			set_include_path($pluginDir);
 
-			$successMSG = "";
-			$errorMSG = "";
+			$responseHTML = "";
 
 			if(strpos($content, "[er-crowd-account]") !== false){
 				if(is_user_logged_in()){
-					//a view por defeito é a info
-					$view = (isset($_GET["view"]))? $_GET["view"] : "info";
-
-					//este é o menu de navegação que será sempre ncluido
-					include "modules/frontend/account__nav.php";
-
-					$responseHTML .= "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
-					$responseHTML .= "<script>var ajaxurl = '".admin_url('admin-ajax.php')."';</script>";
-					$responseHTML .= "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
 					$responseHTML .= "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
-					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
-					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main__frontend.js"></script>';
-					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
-					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main__frontend.js"></script>';
-					$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
-
 				}else{
-					include "modules/frontend/account__register.php";
+					$responseHTML .= "<script>window.loginNonce = '".wp_create_nonce('er-login-nonce')."';</script>";
+					$responseHTML .= "<script>window.registerNonce = '".wp_create_nonce('er-register-nonce')."';</script>";
 				}
-			}
 
-			$responseHTML = str_replace("{REQUEST_URI}", $_SERVER['REQUEST_URI'], $responseHTML);
-			//Success Message
-			$responseHTML = str_replace("{hidde_success}", ($successMSG != "")? "" : "hidden", $responseHTML);
-			$responseHTML = str_replace("{success_message}", $successMSG, $responseHTML);
-			//Error message
-			$responseHTML = str_replace("{hidde_error}", ($errorMSG != "")? "" : "hidden", $responseHTML);
-			$responseHTML = str_replace("{error_message}", $errorMSG, $responseHTML);
+				//este é o menu de navegação que será sempre ncluido
+				$responseHTML .= file_get_contents($pluginDir."templates/frontend/account__nav.php", false);
+
+				$responseHTML .= "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
+				$responseHTML .= "<script>var ajaxurl = '".admin_url('admin-ajax.php')."';</script>";
+				$responseHTML .= "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
+				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
+				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main__frontend.js"></script>';
+				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
+				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main__frontend.js"></script>';
+				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
+			}
 
 			$content = str_replace("[er-crowd-account]", $responseHTML, $content);
 
@@ -659,6 +664,7 @@ if (isset($eralha_crowdfunding_account_obj)) {
 
 		add_action('admin_menu', 'eralha_crowdfunding_account_init');
 
+		add_action( 'wp_ajax_nopriv_userLogin', array($eralha_crowdfunding_account_obj, 'userLogin') );
 		add_action( 'wp_ajax_getColaborators', array($eralha_crowdfunding_account_obj, 'getAllColaborators') );
 		add_action( 'wp_ajax_getSubscribers', array($eralha_crowdfunding_account_obj, 'getAllSubscribers') );
 		add_action( 'wp_ajax_getColaboradorSubscribers', array($eralha_crowdfunding_account_obj, 'getColaboradorSubscribers') );
