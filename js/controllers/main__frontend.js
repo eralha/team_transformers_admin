@@ -2,12 +2,14 @@
 
 	module.controller('mainController', function($scope, dataService, $location, routeConfig) {
 
-		$scope.isAdmin = window.isAdmin;
 		$scope.currentUserId = window.currentUserId;
 		$scope.msgs_to_read = 0;
 
 		
 
+		$scope.$on('$routeChangeComplete', function(next, current) { 
+			$scope.parseLocation();
+		});
 		$scope.$on('$routeChangeStart', function(next, current) { 
 			$scope.parseLocation();
 		});
@@ -22,8 +24,9 @@
 		$scope.parseLocation = function(){
 			$scope.url = $location.url();
 
-			if($scope.url == '' && $scope.currentUserId){
+			if(isRequiredLogin($scope.url) == false && $scope.currentUserId){
 				window.location = '#/account/';
+				return;
 			}
 			if(!$scope.currentUserId && isRequiredLogin($scope.url) || $scope.url == ''){
 				window.location = '#/user-login/';
@@ -33,6 +36,12 @@
 
 		$scope.checkUrl = function(url){
 			return (String($scope.url).indexOf(url) != -1) ? true : false;
+		}
+
+		$scope.redirectToRoot = function(){
+			var loc = window.location;
+				loc = String(loc).slice(0, String(loc).indexOf('#'));
+			window.location = loc;
 		}
 
 		$scope.getMessagesToRead = function(){
@@ -56,13 +65,27 @@
 			});
 		}
 
-		if($scope.currentUserId){
+		$scope.logout = function(){
+			dataService.getData({
+				action : 'userLogout'
+			}).then(function(data){
+				if(data == true){
+					$scope.redirectToRoot();
+				}
+			});
+		}
+
+		$scope.initLoggedInUser = function(){
 			//Get logged user info
 			//on frontend we only need to do this once
-			$scope.getUser(window.currentUserId);
+			$scope.getUser($scope.currentUserId);
 
 			//Get number of messages user has to read
 			$scope.getMessagesToRead();
+		}
+
+		if($scope.currentUserId){
+			$scope.initLoggedInUser();
 		}
 
 		jQuery('.angular-init').removeClass('angular-init');
@@ -71,11 +94,14 @@
 
 	module.controller('loginController', function($scope, $rootScope, dataService, $routeParams) {
 
+		$scope.login = {};
+
 		$scope.logInUser = function(){
 			dataService.getData({
 				action : 'userLogin',
-				nonce : window.loginNonce
+				data : $scope.login
 			}).then(function(data){
+
 				console.log(data);
 
 				//if data == 0 show error
@@ -88,12 +114,9 @@
 					return;
 				}
 
-				$rootScope.showInsertMessage = true;
-
-				$rootScope.$onTimeout('sucessMsg', function(){
-					$rootScope.showInsertMessage = false;
-					$scope.$apply();
-				}, 2000);
+				if(data.loggedin == true){
+					$scope.redirectToRoot();
+				}
 			});
 		}
 

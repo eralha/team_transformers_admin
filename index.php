@@ -22,6 +22,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 		var $ajaxHoocks = array(
 		        "userLogin" => "nopriv",
 		        "userRegister" => "nopriv",
+		        "userLogout" => "priv",
 		        "getColaborators" => "priv",
 		        "getSubscribers" => "priv",
 		        "getColaboradorSubscribers" => "priv",
@@ -596,7 +597,32 @@ if (!class_exists("eralha_crowdfunding_account")){
 		function userLogin(){
 			$this->verifyNonce('userLogin');
 
-			echo "running here!";
+			$data = $_POST["data"];
+
+			if(!isset($data["user_login"]) || !isset($data["user_password"]) || is_user_logged_in()){
+				echo "0";
+				wp_die();
+			}
+
+			$data['remember'] = true;
+
+			$user_signon = wp_signon($data, false);
+
+			if (is_wp_error($user_signon)){
+		        echo "0";
+		    }else{
+		        echo json_encode( array('loggedin'=>true, 'ID' => $user_signon->ID) );
+		    }
+
+			wp_die();
+		}
+
+		function userLogout(){
+			$this->verifyNonce('userLogout');
+
+			wp_logout();
+
+			echo "true";
 
 			wp_die();
 		}
@@ -686,17 +712,6 @@ if (!class_exists("eralha_crowdfunding_account")){
 			    }
 			  }
 			}
-		}
-
-		function validate($form){
-			$errorMSG = "";
-			$errCount = 0;
-
-			include "validators/$form.php";
-
-			$errorMSG = ($errCount > 0)? "<b>Existem erros nos seguintes campos:</b><p>".$errorMSG."</p>" : "";
-
-			return array($errorMSG, $errCount);
 		}
 
 		function createContext($data){

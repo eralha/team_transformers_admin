@@ -6,6 +6,9 @@
 		  <li role="presentation" ng-class="{active : checkUrl('/user-inbox/') || checkUrl('/user-outbox/')}"><a href="#/user-inbox/">
 		  	Mensagens <span class="badge" ng-show="msgs_to_read != 0">{{msgs_to_read}}</span>
 		  </a></li>
+		  <li role="presentation"><a href="#{{url}}" ng-click="logout()">
+		  	Sair <span class="fa fa-sign-out"></span>
+		  </a></li>
 		</ul>
 
 		<div class="alert alert-success" role="alert" ng-if="showInsertMessage">Registo Guardado</div>
