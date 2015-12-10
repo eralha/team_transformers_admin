@@ -16,7 +16,26 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 		var $optionsName = "eralha_crowdfunding_account";
 		var $dbVersion = "0.2";
+		var $nonceSalt = "er-plugin-nonce-";
 		var $path = "/account/"; //path to account pages
+
+		var $ajaxHoocks = array(
+		        "userLogin" => "nopriv",
+		        "userRegister" => "nopriv",
+		        "getColaborators" => "priv",
+		        "getSubscribers" => "priv",
+		        "getColaboradorSubscribers" => "priv",
+		        "getUser" => "priv",
+		        "setUserMeta" => "priv",
+		        "getUserMessages" => "priv",
+		        "getUserToReadMessages" => "priv",
+		        "getUserInbox" => "priv",
+		        "getUserOutbox" => "priv",
+		        "sendMessageToUser" => "priv",
+		        "sendMessageToAdmin" => "priv",
+		        "updateUserData" => "priv",
+		        "updateMessageState" => "priv"
+		    );
 
 		function eralha_crowdfunding_account(){
 			
@@ -92,6 +111,61 @@ if (!class_exists("eralha_crowdfunding_account")){
 			//$wpdb->query("DROP TABLE IF EXISTS ". $tabea_ficheiros);
 		}
 
+		function configAjaxHoocks(){
+			foreach ($this->ajaxHoocks as $key => $value){
+				if($value == "priv"){
+					add_action( 'wp_ajax_'.$key, array($this, $key) );
+				}
+				if($value == "nopriv"){
+					add_action( 'wp_ajax_nopriv_'.$key, array($this, $key) );
+				}
+			}
+		}
+
+		function generateNonces(){
+			$salt = $this->nonceSalt;
+			$hoocks = $this->ajaxHoocks;
+			$nonces = array();
+
+			if(is_user_logged_in()){
+				global $current_user;
+
+				$current_userID = $current_user->data->ID;
+				$salt .= $current_userID;
+			}
+
+			foreach ($hoocks as $key => $value){
+				$hoocks[$key] = wp_create_nonce($salt.$key);
+
+				if(is_user_logged_in() && $value == "priv"){
+					$nonces[$key] = $hoocks[$key];
+				}
+				if($value == "nopriv"){
+					$nonces[$key] = $hoocks[$key];
+				}
+			}
+
+			return json_encode($nonces);
+		}
+
+		function verifyNonce($action){
+			$salt = $this->nonceSalt;
+
+			if(is_user_logged_in()){
+				global $current_user;
+
+				$current_userID = $current_user->data->ID;
+				$salt .= $current_userID;
+			}
+
+			$error = array(
+				"error" => "NOT_ALLOWED",
+				"action" => $action
+			);
+
+			if (!wp_verify_nonce($_POST["nonce"], $salt.$action)){ die(json_encode($error)); }
+		}
+
 		function reArrayFiles($file_post) {
 		    $file_ary = array();
 		    $file_count = count($file_post['name']);
@@ -105,7 +179,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 		    return $file_ary;
 		}
 
-		function getAllColaborators(){
+		function getColaborators(){
+			$this->verifyNonce('getColaborators');
+
 			global $wpdb;
 			global $current_user;
 
@@ -146,6 +222,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function getUserToReadMessages(){
+			$this->verifyNonce('getUserToReadMessages');
+
 			global $wpdb;
 			global $current_user;
 
@@ -166,6 +244,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function getColaboradorSubscribers(){
+			$this->verifyNonce('getColaboradorSubscribers');
+
 			global $wpdb;
 			global $current_user;
 
@@ -195,7 +275,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
-		function getAllSubscribers(){
+		function getSubscribers(){
+			$this->verifyNonce('getSubscribers');
+
 			global $wpdb;
 			global $current_user;
 
@@ -223,7 +305,9 @@ if (!class_exists("eralha_crowdfunding_account")){
 			wp_die();
 		}
 
-		function getUserInfo(){
+		function getUser(){
+			$this->verifyNonce('getUser');
+
 			global $wpdb;
 			global $current_user;
 
@@ -276,6 +360,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function getUserInbox(){
+			$this->verifyNonce('getUserInbox');
+
 			global $wpdb;
 			global $current_user;
 
@@ -292,6 +378,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function getUserOutbox(){
+			$this->verifyNonce('getUserOutbox');
+
 			global $wpdb;
 			global $current_user;
 
@@ -308,6 +396,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function getUserMessages(){
+			$this->verifyNonce('getUserMessages');
+
 			global $wpdb;
 			global $current_user;
 			
@@ -327,6 +417,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function sendMessageToUser(){
+			$this->verifyNonce('sendMessageToUser');
+
 			global $wpdb;
 			global $current_user;
 
@@ -365,6 +457,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function sendMessageToAdmin(){
+			$this->verifyNonce('sendMessageToAdmin');
+
 			global $wpdb;
 			global $current_user;
 
@@ -401,6 +495,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function setUserMeta(){
+			$this->verifyNonce('setUserMeta');
+
 			global $wpdb;
 			global $current_user;
 
@@ -424,6 +520,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function updateMessageState(){
+			$this->verifyNonce('updateMessageState');
+
 			global $wpdb;
 			global $current_user;
 
@@ -450,6 +548,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function updateUserData(){
+			$this->verifyNonce('updateUserData');
+
 			global $wpdb;
 			global $current_user;
 
@@ -494,7 +594,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function userLogin(){
-			if (!wp_verify_nonce($_POST["nonce"], 'er-login-nonce')){ die('0'); }
+			$this->verifyNonce('userLogin');
 
 			echo "running here!";
 
@@ -502,7 +602,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 		}
 
 		function userRegister(){
-			if (!wp_verify_nonce($_POST["nonce"], 'er-register-nonce')){ die('0'); }
+			$this->verifyNonce('userRegister');
 
 			echo "running here!";
 
@@ -536,7 +636,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 				echo "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
 				echo "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
-				echo "<script>window.currentUserId = '".$current_user->data->ID."';</script>";				
+				echo "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
+				echo "<script>window.nonces = ".$this->generateNonces().";</script>";
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main.js"></script>';
 				echo '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
@@ -621,9 +722,6 @@ if (!class_exists("eralha_crowdfunding_account")){
 			if(strpos($content, "[er-crowd-account]") !== false){
 				if(is_user_logged_in()){
 					$responseHTML .= "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
-				}else{
-					$responseHTML .= "<script>window.loginNonce = '".wp_create_nonce('er-login-nonce')."';</script>";
-					$responseHTML .= "<script>window.registerNonce = '".wp_create_nonce('er-register-nonce')."';</script>";
 				}
 
 				//este é o menu de navegação que será sempre ncluido
@@ -632,6 +730,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 				$responseHTML .= "<link rel='stylesheet' href='".plugins_url( '', __FILE__ )."/css/admin__style.css' type='text/css' />";
 				$responseHTML .= "<script>var ajaxurl = '".admin_url('admin-ajax.php')."';</script>";
 				$responseHTML .= "<script>window.pluginsDir = '".plugins_url( '', __FILE__ )."';</script>";
+				$responseHTML .= "<script>window.nonces = ".$this->generateNonces().";</script>";
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/angular.js"></script>';
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/main__frontend.js"></script>';
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
@@ -664,20 +763,8 @@ if (isset($eralha_crowdfunding_account_obj)) {
 
 		add_action('admin_menu', 'eralha_crowdfunding_account_init');
 
-		add_action( 'wp_ajax_nopriv_userLogin', array($eralha_crowdfunding_account_obj, 'userLogin') );
-		add_action( 'wp_ajax_getColaborators', array($eralha_crowdfunding_account_obj, 'getAllColaborators') );
-		add_action( 'wp_ajax_getSubscribers', array($eralha_crowdfunding_account_obj, 'getAllSubscribers') );
-		add_action( 'wp_ajax_getColaboradorSubscribers', array($eralha_crowdfunding_account_obj, 'getColaboradorSubscribers') );
-		add_action( 'wp_ajax_getUser', array($eralha_crowdfunding_account_obj, 'getUserInfo') );
-		add_action( 'wp_ajax_setUserMeta', array($eralha_crowdfunding_account_obj, 'setUserMeta') );
-		add_action( 'wp_ajax_getUserMessages', array($eralha_crowdfunding_account_obj, 'getUserMessages') );
-		add_action( 'wp_ajax_getUserToReadMessages', array($eralha_crowdfunding_account_obj, 'getUserToReadMessages') );
-		add_action( 'wp_ajax_getUserInbox', array($eralha_crowdfunding_account_obj, 'getUserInbox') );
-		add_action( 'wp_ajax_getUserOutbox', array($eralha_crowdfunding_account_obj, 'getUserOutbox') );
-		add_action( 'wp_ajax_sendMessageToUser', array($eralha_crowdfunding_account_obj, 'sendMessageToUser') );
-		add_action( 'wp_ajax_sendMessageToAdmin', array($eralha_crowdfunding_account_obj, 'sendMessageToAdmin') );
-		add_action( 'wp_ajax_updateUserData', array($eralha_crowdfunding_account_obj, 'updateUserData') );
-		add_action( 'wp_ajax_updateMessageState', array($eralha_crowdfunding_account_obj, 'updateMessageState') );
+		//Hoocking ajax functions by a array config
+		$eralha_crowdfunding_account_obj->configAjaxHoocks();
 
 
 	//Filters

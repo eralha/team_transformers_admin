@@ -1,45 +1,41 @@
 <?php
-
-    $metaBoxes = array(
-        "config_projeto" => array(
-            "groupTitle" => "Configuração projecto",
-            "fields" => array(
-                array("Data Finalização", "proj_data_fecho", "text"),
-                array("Total a Angariar", "proj_total_angariar", "text"),
-                array("Total Angariado", "proj_total_angariado", "text"),
-                array("Estado Projecto", "proj_estado", "select", 
-                    "options" => array(
-                        "Em análise",
-                        "Em curso",
-                        "Finalizado sem sucesso",
-                        "Finalizado com exito",
-                        "Financiado"
-                    ))
-            )
-        ),
-        "informacao_promotor" => array(
-            "groupTitle" => "O Promotor",
-            "fields" => array(
-                array("Nome Promotor", "proj_nome_promotor", "text"),
-                array("Telefone Promotor", "proj_telf_promotor", "text")
-            )
-        ),
-        "informacao_projecto" => array(
-            "groupTitle" => "Informação do Projecto",
-            "fields" => array(
-                array("Titulo", "proj_title", "text"),
-                array("Facebook", "proj_facebook", "text"),
-                array("Objectivo", "proj_objectivo", "text"),
-                array("Video", "proj_video_url", "text"),
-                array("Localização", "proj_localizacao", "text"),
-                array("Resumo", "proj_resumo", "textarea"),
-                array("Sobre o Projecto", "proj_sobre", "textarea"),
-                array("Sobre o Promotor", "proj_sobre_promotor", "textarea"),
-                array("Orçamento e prazos", "proj_orcamento", "textarea"),
-                array("Plano Divulgação", "proj_plano_divulgacao", "textarea"),
-                array("Níveis / Recompensas", "proj_recompensas", "group")
-            )
-        ),
+    
+    $ajaxHoocks = array(
+        "userLogin" => "nopriv",
+        "getColaborators",
+        "getSubscribers",
+        "getColaboradorSubscribers",
+        "getUser",
+        "setUserMeta",
+        "getUserMessages",
+        "getUserToReadMessages",
+        "getUserInbox",
+        "getUserOutbox",
+        "sendMessageToUser",
+        "sendMessageToAdmin",
+        "updateUserData",
+        "updateMessageState"
     );
+
+
+    add_action( 'wp_ajax_nopriv_userLogin', array($eralha_crowdfunding_account_obj, 'userLogin') );
+    add_action( 'wp_ajax_getColaborators', array($eralha_crowdfunding_account_obj, 'getColaborators') );
+    add_action( 'wp_ajax_getSubscribers', array($eralha_crowdfunding_account_obj, 'getSubscribers') );
+    add_action( 'wp_ajax_getColaboradorSubscribers', array($eralha_crowdfunding_account_obj, 'getColaboradorSubscribers') );
+    add_action( 'wp_ajax_getUser', array($eralha_crowdfunding_account_obj, 'getUser') );
+    add_action( 'wp_ajax_setUserMeta', array($eralha_crowdfunding_account_obj, 'setUserMeta') );
+    add_action( 'wp_ajax_getUserMessages', array($eralha_crowdfunding_account_obj, 'getUserMessages') );
+    add_action( 'wp_ajax_getUserToReadMessages', array($eralha_crowdfunding_account_obj, 'getUserToReadMessages') );
+    add_action( 'wp_ajax_getUserInbox', array($eralha_crowdfunding_account_obj, 'getUserInbox') );
+    add_action( 'wp_ajax_getUserOutbox', array($eralha_crowdfunding_account_obj, 'getUserOutbox') );
+    add_action( 'wp_ajax_sendMessageToUser', array($eralha_crowdfunding_account_obj, 'sendMessageToUser') );
+    add_action( 'wp_ajax_sendMessageToAdmin', array($eralha_crowdfunding_account_obj, 'sendMessageToAdmin') );
+    add_action( 'wp_ajax_updateUserData', array($eralha_crowdfunding_account_obj, 'updateUserData') );
+    add_action( 'wp_ajax_updateMessageState', array($eralha_crowdfunding_account_obj, 'updateMessageState') );
+
+    function generateConfig(){
+
+    }
+
 
 ?>
