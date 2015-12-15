@@ -583,6 +583,8 @@ if (!class_exists("eralha_crowdfunding_account")){
 			}
 			wp_update_user($update_batch);
 
+
+
 			$this->updateMetaData($user_id, $user_meta);
 
 			echo json_encode(get_user_by('id', $current_userID));
@@ -630,7 +632,36 @@ if (!class_exists("eralha_crowdfunding_account")){
 		function userRegister(){
 			$this->verifyNonce('userRegister');
 
-			echo "running here!";
+			$data = $_POST["data"];
+
+			$userID = wp_insert_user( 
+				array (
+					'first_name' => $data["first_name"],
+					'last_name' => $data["last_name"],
+					'nickname' => $data["nickname"],
+					'user_email' => $data["user_email"],
+					'user_login' => $data["user_login"],
+					'user_pass' => $data["user_pass"]
+			));
+
+			/*
+				Add a custom capability to the user
+					$user = new WP_User($userID);
+					$user->add_cap("edit_posts");
+					$user->add_cap("delete_posts");
+			*/
+
+			if(isset($userID->errors)){
+				echo json_encode($userID);
+			}else{
+				//Add USER INFO
+				add_user_meta($userID, "adress", $data["adress"], true);
+				add_user_meta($userID, "localidade", $data["localidade"], true);
+				add_user_meta($userID, "codPostal", $data["codPostal"], true);
+				add_user_meta($userID, "treinador", "Não atribuido", true);
+
+				echo $userID;
+			}
 
 			wp_die();
 		}

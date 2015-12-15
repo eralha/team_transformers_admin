@@ -15,6 +15,12 @@
 
 		<div class="alert alert-danger" role="alert" ng-if="showInsertError">Ocorreu um erro!</div>
 
+		<div class="alert alert-danger" role="alert" ng-if="showFormError">
+			Correu o seguinte erro:
+			<div ng-if="errors.existing_user_login">- O username que escolheu já existe</div>
+			<div ng-if="errors.existing_user_email">- O email que escolheu já existe</div>
+		</div>
+
 
 		<ng-view></ng-view>
 	</div>

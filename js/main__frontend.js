@@ -26,7 +26,7 @@ var module = angular.module('appModule', ['ngRoute']);
         },
         {
             path: '/user-register/',
-            controller: 'loginController',
+            controller: 'registerController',
             template: window.pluginsDir+'/ng-templates/frontend/user__register.php',
         },
     ];

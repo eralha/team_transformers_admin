@@ -1,6 +1,6 @@
 
 
-	module.controller('mainController', function($scope, dataService, $location, routeConfig) {
+	module.controller('mainController', function($scope, dataService, $location, routeConfig, $rootScope) {
 
 		$scope.currentUserId = window.currentUserId;
 		$scope.msgs_to_read = 0;
@@ -84,6 +84,18 @@
 			$scope.getMessagesToRead();
 		}
 
+		$scope.showMessage = function(message, messageContent, timer){
+			$("html, body").stop().animate({scrollTop:0}, '300', 'swing');
+
+			var time = timer || 2000;
+
+			$rootScope[message] = true;
+			$rootScope.$onTimeout(message, function(){
+				$rootScope[message] = false;
+				$scope.$apply();
+			}, time);
+		}
+
 		if($scope.currentUserId){
 			$scope.initLoggedInUser();
 		}
@@ -106,11 +118,32 @@
 
 				//if data == 0 show error
 				if(data == 0){
-					$rootScope.showInsertError = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertError = false;
-						$scope.$apply();
-					}, 2000);
+					$scope.showMessage('showInsertError');
+					return;
+				}
+
+				if(data.loggedin == true){
+					$scope.redirectToRoot();
+				}
+			});
+		}
+
+	});
+
+	module.controller('registerController', function($scope, $rootScope, dataService, $routeParams) {
+
+		$scope.login = {};
+
+		$scope.registerUser = function(){
+			dataService.getData({
+				action : 'userRegister',
+				data : $scope.registo
+			}).then(function(data){
+
+				//if data == 0 show error
+				if(data.errors){
+					$rootScope.errors = data.errors;
+					$scope.showMessage('showFormError', '', 5000);
 					return;
 				}
 
@@ -136,20 +169,13 @@
 
 				//if data == 0 show error
 				if(data == 0){
-					$rootScope.showInsertError = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertError = false;
-						$scope.$apply();
-					}, 2000);
+					$scope.showMessage('showInsertError');
 					return;
 				}
 
 				$rootScope.showInsertMessage = true;
 
-				$rootScope.$onTimeout('sucessMsg', function(){
-					$rootScope.showInsertMessage = false;
-					$scope.$apply();
-				}, 2000);
+				$scope.showMessage('showInsertMessage');
 			});
 		}
 
@@ -198,18 +224,10 @@
 					$scope.toggleForm();
 					if(loc.indexOf('user-outbox') != -1){ $scope.getMessages(); }
 
-					$rootScope.showInsertMessage = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertMessage = false;
-						$scope.$apply();
-					}, 2000);
+					$scope.showMessage('showInsertMessage');
 				}
 				if(data == 0){
-					$rootScope.showInsertError = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertError = false;
-						$scope.$apply();
-					}, 2000);
+					$scope.showMessage('showInsertError');
 				}
 			});
 		}
