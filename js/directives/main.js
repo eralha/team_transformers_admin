@@ -55,16 +55,19 @@
 				//if no messages to update do nothing
 				if(msgsToUpdate.length == 0){ return; }
 
-				$rootScope.$onTimeout('changeMessageStatus', function(){
-					dataService.getData({
-						action : 'updateMessageState',
-						msgs: angular.toJson(msgsToUpdate)
-					}).then(function(data){
-						//we have changed values so update our list
-						if(data >= 1){
+				dataService.getData({
+					action : 'updateMessageState',
+					msgs: angular.toJson(msgsToUpdate)
+				}).then(function(data){
+					//we have changed values so update our list
+					if(data >= 1){
+						$rootScope.$onTimeout('changeMessageStatus', function(){
+							//If on frontend we process on function on backend we call the user again
 							if($scope.getMessagesToRead){
+								//frontend call
 								$scope.getMessagesToRead();
 							}else{
+								//backend call
 								$scope.getUser($scope.user.ID);
 							}
 
@@ -74,10 +77,11 @@
 								  	$scope.messages[i].iLida = 1;
 								  }
 							}
-						}
-					});
-				}, 2000);
-		    }
+						}, 2000);
+					}
+				});
+
+		    }//end ------ showPage
             
         }
       };

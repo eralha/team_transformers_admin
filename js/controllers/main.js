@@ -1,6 +1,6 @@
 
 
-	module.controller('mainController', function($scope, dataService, $location) {
+	module.controller('mainController', function($scope, dataService, $location, $rootScope) {
 
 		$scope.isAdmin = window.isAdmin;
 		$scope.currentUserId = window.currentUserId;
@@ -44,6 +44,18 @@
 			});
 		}
 
+		$scope.showMessage = function(message, messageContent, timer){
+			$("html, body").stop().animate({scrollTop:0}, '300', 'swing');
+
+			var time = timer || 2000;
+
+			$rootScope[message] = true;
+			$rootScope.$onTimeout(message, function(){
+				$rootScope[message] = false;
+				$scope.$apply();
+			}, time);
+		}
+
 		dataService.getData({
 			action : 'getColaborators'
 		}).then(function(data){
@@ -67,12 +79,7 @@
 			}).then(function(data){
 				console.log(data);
 
-				$rootScope.showInsertMessage = true;
-
-				$rootScope.$onTimeout('sucessMsg', function(){
-					$rootScope.showInsertMessage = false;
-					$scope.$apply();
-				}, 2000);
+				$scope.showMessage('showInsertMessage');
 			});
 		}
 
@@ -123,18 +130,11 @@
 					$scope.currentPage = 0;
 					$scope.toggleForm();
 					if(loc.indexOf('user-outbox') != -1){ $scope.getMessages(); }
-					$rootScope.showInsertMessage = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertMessage = false;
-						$scope.$apply();
-					}, 2000);
+
+					$scope.showMessage('showInsertMessage');
 				}
 				if(data == 0){
-					$rootScope.showInsertError = true;
-					$rootScope.$onTimeout('errorMsg', function(){
-						$rootScope.showInsertError = false;
-						$scope.$apply();
-					}, 2000);
+					$scope.showMessage('showInsertError');
 				}
 			});
 		}
