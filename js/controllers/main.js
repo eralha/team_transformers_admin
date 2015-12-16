@@ -45,7 +45,7 @@
 		}
 
 		$scope.showMessage = function(message, messageContent, timer){
-			$("html, body").stop().animate({scrollTop:0}, '300', 'swing');
+			//$("html, body").stop().animate({scrollTop:0}, '300', 'swing');
 
 			var time = timer || 2000;
 

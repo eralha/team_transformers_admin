@@ -11,6 +11,8 @@
 		  </a></li>
 		</ul>
 
+		<div id="notifyZone"></div>
+
 		<div class="alert alert-success" role="alert" ng-if="showInsertMessage">Registo Guardado</div>
 
 		<div class="alert alert-danger" role="alert" ng-if="showInsertError">Ocorreu um erro!</div>

@@ -23,7 +23,7 @@
         </button>
         <h4 class="list-group-item-heading">
             {{msg.vchSenderName}}: 
-            <span ng-if="msg.iIDMenssagemResposta != 0">[RE]: </span>{{msg.vchAssunto}}
+            <span ng-if="msg.iIDMenssagemResposta != 0">[RE] </span>{{msg.vchAssunto}}
         </h4>
         <p>{{msg.vchMensagem}}</p>
       </div>
