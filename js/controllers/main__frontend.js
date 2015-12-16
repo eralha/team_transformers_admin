@@ -114,8 +114,6 @@
 				data : $scope.login
 			}).then(function(data){
 
-				console.log(data);
-
 				//if data == 0 show error
 				if(data == 0){
 					$scope.showMessage('showInsertError');
