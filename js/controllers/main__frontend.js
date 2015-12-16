@@ -133,8 +133,22 @@
 	module.controller('registerController', function($scope, $rootScope, dataService, $routeParams) {
 
 		$scope.login = {};
+		$scope.formErrors = {};
 
 		$scope.registerUser = function(){
+
+			$scope.registerSuccess = false;
+
+			if(Object.keys($scope.formErrors).length > 0){
+				//scroll to error message
+				$("html, body").stop().animate({scrollTop: $('#registerForm').offset().top - 100}, '300', 'swing');
+				$scope.showFormError = true;
+
+				return;
+			}else{
+				$scope.showFormError = false;
+			}
+
 			dataService.getData({
 				action : 'userRegister',
 				data : $scope.registo
@@ -147,9 +161,13 @@
 					return;
 				}
 
-				if(data.loggedin == true){
-					$scope.redirectToRoot();
+				if(data.userID){
+					$("html, body").stop().animate({scrollTop: $('#registerForm').offset().top - 100}, '300', 'swing');
+
+					$scope.registerSuccess = true;
+					return;
 				}
+				
 			});
 		}
 

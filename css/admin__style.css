@@ -7,6 +7,9 @@
 }
 .team__admin {}
 .team__admin .pagination li { cursor: pointer; }
+input.error {
+	background-color: #ffc9b8;
+}
 
 @media only screen and (max-width: 782px){ 
   #wpcontent { padding-right: 10px; }

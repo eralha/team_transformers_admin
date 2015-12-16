@@ -660,7 +660,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 				add_user_meta($userID, "codPostal", $data["codPostal"], true);
 				add_user_meta($userID, "treinador", "Não atribuido", true);
 
-				echo $userID;
+				echo '{"userID": "'.$userID.'"}';
 			}
 
 			wp_die();
