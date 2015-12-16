@@ -12,7 +12,7 @@
         <input type="password" class="form-control" ng-model="login.user_password" />
       </div>
 
-      <p>Se anda não tem uma conta <a href="#/user-register">clique aqui para registar</a>.</p>
+      <p>Se anda não tem uma conta <a href="#/user-register/">clique aqui para registar</a>.</p>
       <p><a href="">Recuperar password</a></p>
 
     </form>
