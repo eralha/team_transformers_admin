@@ -634,14 +634,13 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 			$data = $_POST["data"];
 
-			$userID = wp_insert_user( 
-				array (
-					'first_name' => $data["first_name"],
-					'last_name' => $data["last_name"],
-					'nickname' => $data["nickname"],
-					'user_email' => $data["user_email"],
-					'user_login' => $data["user_login"],
-					'user_pass' => $data["user_pass"]
+			$userID = wp_insert_user(array (
+				'first_name' => $data["first_name"],
+				'last_name' => $data["last_name"],
+				'nickname' => $data["nickname"],
+				'user_email' => $data["user_email"],
+				'user_login' => $data["user_login"],
+				'user_pass' => $data["user_pass"]
 			));
 
 			/*

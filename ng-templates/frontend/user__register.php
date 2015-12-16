@@ -1,14 +1,14 @@
 <!-- LIST USER -->
 <div class="list-group">
 
-    <div class="alert alert-success" role="alert" ng-if="!registerSuccess">
+    <div class="alert alert-success" role="alert" ng-if="registerSuccess">
       <b>O Registo foi criado com successo</b> utilize os seus dados para entrar no website.<br />
       <a href="#/user-login/">
         <button type="button" class="btn btn-success" style="margin-top:10px;">Fazer login</button>
       </a>
     </div>
 
-    <form name="registerForm" id="registerForm" ng-show="registerSuccess">
+    <form name="registerForm" id="registerForm" ng-show="!registerSuccess">
 
       <div class="alert alert-danger" role="alert" ng-if="showFormError">
         <b>Verifique os seguintes campos</b>
