@@ -1,6 +1,7 @@
 <!-- LIST USER -->
 <div class="list-group">
 
+
     <div class="alert alert-success" role="alert" ng-if="registerSuccess">
       <b>O Registo foi criado com successo</b> utilize os seus dados para entrar no website.<br />
       <a href="#/user-login/">
@@ -12,6 +13,11 @@
 
       <div class="alert alert-danger" role="alert" ng-if="showFormError">
         <b>Verifique os seguintes campos</b>
+        <!-- ERROS PARSED FROM WP -->
+        <div ng-if="errors.existing_user_login">- O username que escolheu já existe</div>
+        <div ng-if="errors.existing_user_email">- O email que escolheu já existe</div>
+        <div ng-if="errors.empty_user_login">- Username precisa de ser preenchido</div>
+
         <div ng-repeat="error in formErrors">
           <div ng-repeat="e in error">- {{e}}</div>
         </div>

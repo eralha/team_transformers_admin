@@ -247,7 +247,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 			return $context;
 		}
 
-		function addContent($content=''){
+		function addContent($atts, $content=''){
 			global $wpdb;
 			global $current_user;
 
@@ -257,7 +257,7 @@ if (!class_exists("eralha_crowdfunding_account")){
 
 			$responseHTML = "";
 
-			if(strpos($content, "[er-crowd-account]") !== false){
+			//if(strpos($content, "[er-crowd-account]") !== false){
 				if(is_user_logged_in()){
 					$responseHTML .= "<script>window.currentUserId = '".$current_user->data->ID."';</script>";
 				}
@@ -274,11 +274,11 @@ if (!class_exists("eralha_crowdfunding_account")){
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/directives/main.js"></script>';
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/controllers/main__frontend.js"></script>';
 				$responseHTML .= '<script type="text/javascript" src="'.plugins_url( '', __FILE__ ).'/js/services/main.js"></script>';
-			}
+			//}
 
-			$content = str_replace("[er-crowd-account]", $responseHTML, $content);
+			//$content = str_replace("[er-crowd-account]", $responseHTML, $content);
 
-			return $content;
+			return $responseHTML;
 		}
 	}
 }
@@ -318,7 +318,8 @@ if (isset($eralha_crowdfunding_account_obj)) {
 
 	//Filters
 		//Search the content for galery matches
-		add_filter('the_content', array($eralha_crowdfunding_account_obj, 'addContent'));
+		//add_filter('the_content', array($eralha_crowdfunding_account_obj, 'addContent'));
+		add_shortcode( 'er-crowd-account', array($eralha_crowdfunding_account_obj, 'addContent' ) );
 
 	//scripts
 }
