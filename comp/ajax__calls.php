@@ -292,14 +292,7 @@ defined('ABSPATH') or die('Restricted access');
 				wp_die();
 			}
 
-			$message->iUserIdDestinatario = $user_id;
-			$message->iUserId = $current_userID;
-			$message->iData = time();
-			$message->iIDMenssagemResposta = ($message->iIDMenssagemResposta)? $message->iIDMenssagemResposta : 0;
-			$message->iLida = 0;
-			$message->iDataLida = 0;
-
-			$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
+			$results = $this->saveMsg($user_id, $current_userID, $message);
 
 			echo json_encode($results);
 
@@ -330,8 +323,18 @@ defined('ABSPATH') or die('Restricted access');
 				wp_die();
 			}
 
-			$message->iUserIdDestinatario = $treinador->data->ID;
-			$message->iUserId = $current_userID;
+			$results = $this->saveMsg($treinador->data->ID, $current_userID, $message);
+
+			echo json_encode($results);
+
+			wp_die();
+		}
+
+		function saveMsg($iUserIdDestinatario, $iUserId, $message){
+			global $wpdb;
+
+			$message->iUserIdDestinatario = $iUserIdDestinatario;
+			$message->iUserId = $iUserId;
 			$message->iData = time();
 			$message->iIDMenssagemResposta = ($message->iIDMenssagemResposta)? $message->iIDMenssagemResposta : 0;
 			$message->iLida = 0;
@@ -339,9 +342,7 @@ defined('ABSPATH') or die('Restricted access');
 
 			$results = $wpdb->insert($this->table_menssages, get_object_vars($message));
 
-			echo json_encode($results);
-
-			wp_die();
+			return $results;
 		}
 
 		function setUserMeta(){
