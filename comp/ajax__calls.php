@@ -256,7 +256,7 @@ defined('ABSPATH') or die('Restricted access');
 
 			$query = 'SELECT msg.*, u.display_name AS vchSenderName FROM '.$this->table_menssages.' AS msg';
 			$query .= ' INNER JOIN wp_users AS u ON u.ID = msg.iUserId';
-			$query .= ($inbox == true)? ' WHERE msg.iUserId = '.$user_id : ' WHERE msg.iUserIdDestinatario = '.$user_id;
+			$query .= ($inbox == false)? ' WHERE msg.iUserId = '.$user_id : ' WHERE msg.iUserIdDestinatario = '.$user_id;
 			$query .= ' ORDER BY msg.iData DESC';
 
 			$results = $wpdb->get_results($query, OBJECT);

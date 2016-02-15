@@ -205,15 +205,17 @@
 		var loc = $location.url();
 		var getMessagesMeta = {};
 
+		//Aqui estamos no inbox, vemos as recebidas
 		if(loc.indexOf('user-inbox') != -1){
-			getMessagesMeta = {
-				action : 'getUserMessages'
-			}
-		}
-		if(loc.indexOf('user-outbox') != -1){
 			getMessagesMeta = {
 				action : 'getUserMessages',
 				inbox  : true
+			}
+		}
+		//Aqui estamos no out box, vemos as msgs enviadas pelo user
+		if(loc.indexOf('user-outbox') != -1){
+			getMessagesMeta = {
+				action : 'getUserMessages'
 			}
 		}
 
